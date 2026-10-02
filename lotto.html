@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로또 번호 생성기</title>
+<style>
+  :root {
+    color-scheme: light dark;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 480px;
+    margin: 40px auto;
+    padding: 0 20px;
+    text-align: center;
+    background: #f5f6fa;
+    color: #222;
+  }
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+  }
+  p.subtitle {
+    color: #666;
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .controls label {
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .controls input[type="radio"] {
+    cursor: pointer;
+  }
+  button#generate {
+    background: #e83a3a;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button#generate:hover {
+    background: #c92f2f;
+  }
+  .games {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .game {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ball {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  /* 실제 로또 볼 색상 규칙: 1-10 노랑, 11-20 파랑, 21-30 빨강, 31-40 회색, 41-45 초록 */
+  .b1 { background: #fbc400; color: #4a3900; }
+  .b2 { background: #69c8f2; }
+  .b3 { background: #ff7272; }
+  .b4 { background: #aaaaaa; }
+  .b5 { background: #b0d840; color: #333; }
+</style>
+</head>
+<body>
+  <h1>🎱 로또 번호 생성기</h1>
+  <p class="subtitle">1~45 중 서로 다른 6개의 번호를 무작위로 뽑아드려요</p>
+
+  <div class="controls">
+    <label><input type="radio" name="count" value="1"> 1게임</label>
+    <label><input type="radio" name="count" value="5" checked> 5게임</label>
+    <button id="generate">번호 생성</button>
+  </div>
+
+  <div class="games" id="games"></div>
+
+  <script>
+    function ballClass(n) {
+      if (n <= 10) return 'b1';
+      if (n <= 20) return 'b2';
+      if (n <= 30) return 'b3';
+      if (n <= 40) return 'b4';
+      return 'b5';
+    }
+
+    function generateOneGame() {
+      const pool = Array.from({ length: 45 }, (_, i) => i + 1);
+      // Fisher-Yates shuffle
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, 6).sort((a, b) => a - b);
+    }
+
+    function render(games) {
+      const container = document.getElementById('games');
+      container.innerHTML = '';
+      games.forEach((numbers) => {
+        const row = document.createElement('div');
+        row.className = 'game';
+        numbers.forEach((n) => {
+          const ball = document.createElement('span');
+          ball.className = `ball ${ballClass(n)}`;
+          ball.textContent = n;
+          row.appendChild(ball);
+        });
+        container.appendChild(row);
+      });
+    }
+
+    function getSelectedCount() {
+      const checked = document.querySelector('input[name="count"]:checked');
+      return checked ? parseInt(checked.value, 10) : 5;
+    }
+
+    document.getElementById('generate').addEventListener('click', () => {
+      const count = getSelectedCount();
+      const games = Array.from({ length: count }, generateOneGame);
+      render(games);
+    });
+
+    // 시작 화면에서 기본 선택(5게임)으로 바로 생성
+    render(Array.from({ length: getSelectedCount() }, generateOneGame));
+  </script>
+</body>
+</html>
